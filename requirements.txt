@@ -8,3 +8,5 @@ Pillow
 easyocr
 python-dotenv
 python-multipart
+torch
+torchvision

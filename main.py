@@ -16,8 +16,11 @@ load_dotenv()
 
 app = FastAPI()
 
-# Set API Key
-API_KEY = os.getenv("API_KEY", "my_secure_api_key")
+# Ensure API Key is properly loaded
+API_KEY = os.getenv("API_KEY")
+if not API_KEY:
+    raise RuntimeError("API_KEY not set in environment variables")
+
 
 @app.get("/")
 def read_root():
