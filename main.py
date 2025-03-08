@@ -1,3 +1,4 @@
+import os
 import uvicorn
 import pickle
 from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
@@ -8,7 +9,6 @@ import re
 import numpy as np
 from PIL import Image
 import easyocr
-import os
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -16,16 +16,26 @@ load_dotenv()
 
 app = FastAPI()
 
-# Set your API key
-API_KEY = os.getenv("API_KEY", "my_secure_api_key")  # Default key if not set
+# Set API Key
+API_KEY = os.getenv("API_KEY", "my_secure_api_key")
 
 @app.get("/")
 def read_root():
     return {"message": "Welcome to Electrothon API!"}
 
+# Load Spacy Model (Download if not available)
+spacy_model = "en_core_web_sm"
+try:
+    nlp = spacy.load(spacy_model)
+except OSError:
+    spacy.cli.download(spacy_model)
+    nlp = spacy.load(spacy_model)
 
-nlp = spacy.load("en_core_web_sm")
+# Set Tesseract Path (For Local Windows Execution)
+if os.name == "nt":
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
+# FDA Allergen Data
 FDA_ALLERGENS = {
     "milk": ["milk", "lactose", "butter", "cheese", "cream"],
     "eggs": ["eggs", "egg whites", "egg yolks", "albumin"],
@@ -104,4 +114,5 @@ async def analyze_image(file: UploadFile = File(...), api_key: str = Depends(aut
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

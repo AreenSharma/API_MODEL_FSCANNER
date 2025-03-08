@@ -7,3 +7,4 @@ spacy
 Pillow
 easyocr
 python-dotenv
+python-multipart
