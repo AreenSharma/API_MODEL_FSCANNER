@@ -1,9 +1,7 @@
 import os
 import uvicorn
-import pickle
 from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
 import cv2
-import pytesseract
 import spacy
 import re
 import numpy as np
@@ -34,9 +32,8 @@ except OSError:
     spacy.cli.download(spacy_model)
     nlp = spacy.load(spacy_model)
 
-# Set Tesseract Path (For Local Windows Execution)
-if os.name == "nt":
-    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+# Initialize EasyOCR Reader
+reader = easyocr.Reader(["en"], gpu=False)
 
 # FDA Allergen Data
 FDA_ALLERGENS = {
@@ -74,15 +71,8 @@ def preprocess_image(image: np.ndarray) -> np.ndarray:
 
 def extract_text(image: np.ndarray) -> str:
     processed_img = preprocess_image(image)
-    pil_image = Image.fromarray(processed_img)
-
-    custom_config = r'--oem 3 --psm 6'
-    text = pytesseract.image_to_string(pil_image, config=custom_config)
-
-    reader = easyocr.Reader(["en"], gpu=False)
-    easy_text = " ".join(reader.readtext(image, detail=0))
-
-    return text + " " + easy_text
+    extracted_text = " ".join(reader.readtext(processed_img, detail=0))
+    return extracted_text
 
 
 def clean_text(text: str) -> str:
