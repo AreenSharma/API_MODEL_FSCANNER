@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+numpy
+opencv-python
+pytesseract
+spacy
+Pillow
+easyocr
+python-dotenv
